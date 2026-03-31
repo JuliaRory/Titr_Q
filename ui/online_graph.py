@@ -1,0 +1,117 @@
+import pyqtgraph as pg
+from PyQt5.QtWidgets import QFrame, QHBoxLayout
+
+class OnlineGraph(QFrame):
+         
+    def __init__(self, n=1, settings=None, data_processor=None, parent=None):
+        super().__init__(parent)
+
+        self.n = n
+
+        self.data_processor = data_processor
+        self.settings = settings.plot_settings
+
+        self._setup_ui()
+        self._setup_layout()
+        self._finilize()
+    
+    def _setup_ui(self):
+        # EMG/TKEO(EMG) vs time plot
+        title = "EMG"
+        
+        # self.scale_factor - это степень (например -5), принятая из настроек
+        scale_factor = self._get_scale_factor()
+
+        pen = pg.mkPen(color=(255, 255, 255))               # set white color for a curve 
+        max_width, max_height = 500, 100 
+
+        self.figure = pg.PlotWidget(self)     # list с виджетами для графиков миограмм
+        self.line = self.figure.plot(y=self.data_processor.emg, x=self.data_processor.ts)    # отображение "ничего" на месте сигнала миограммы
+
+        # self._trigger_line = self.figure.plot(y=self.data_processor.emg, x=self.data_processor.ts, pen="b")    # отображение "ничего" на месте сигнала миограммы
+        
+        axis_y = self.figure.getAxis('left')
+        axis_y.autoSIPrefix = False  # Отключаем авто-подбор
+        
+        self.thr_line = None
+        self.trigger_lines = []
+        self.peak_lines = []
+
+        self.figure.setMinimumSize(max_width, max_height)
+        self.figure.setBackground("k")  # set black color for a background
+
+        self.set_graph_title()
+        self.figure.setLabel("left", "Voltage [mV]")
+        self.figure.setLabel("bottom", "Time [ms]")
+        self.figure.showGrid(x=True, y=True)
+        self.figure.setYRange(self.settings.ymin * scale_factor, self.settings.ymax * scale_factor)
+
+    def set_graph_title(self):
+        
+        scale_factor = self._get_scale_factor()
+        title = "EMG -- scale: " + str(scale_factor)
+        self.figure.setTitle(title)
+
+    def _setup_layout(self):
+        layout = QHBoxLayout(self)
+        layout.addWidget(self.figure)
+    
+    def _finilize(self):
+        self.update_yrange()
+
+    def _get_scale_factor(self):
+        if self.n == 1:
+            scale_factor = 10 ** self.settings.scale_factor1
+        elif self.n == 2:
+            scale_factor = 10 ** self.settings.scale_factor2
+        else:
+            scale_factor = 10 ** self.settings.scale_factor3
+        return scale_factor 
+    
+    def update_plot(self):
+        self.line.setData(x=self.data_processor.ts, y=self.data_processor.emg)
+
+        # self._trigger_line.setData(x=self.data_processor.ts, y=self.data_processor.trigger)
+
+        self.check_trigger_lines()
+    
+    def check_trigger_lines(self):
+        # view_range = self.figure.viewRange()
+        # xmin, xmax = view_range[0]
+        xmin = self.data_processor.ts[0]
+        for line in self.trigger_lines[:]:
+            if line.value() < xmin:
+                self.figure.removeItem(line)
+                self.trigger_lines.remove(line)
+        
+        for line in self.peak_lines[:]:
+            if line.value() < xmin:
+                self.figure.removeItem(line)
+                self.peak_lines.remove(line)
+
+    def plot_trigger(self, idx):
+        x_coord = self.data_processor.ts[idx]
+        line = pg.InfiniteLine(pos=x_coord, angle=90, pen="r")
+        self.trigger_lines.append(line)
+        self.figure.addItem(line)
+        # self.figure.plot(y=self.data_processor.emg, x=self.data_processor.ts)    # отображение "ничего" на месте сигнала миограммы
+    
+    def plot_peak(self, idx):
+        x_coord = self.data_processor.ts[idx]
+        line = pg.InfiniteLine(pos=x_coord, angle=90, pen="g")
+        self.peak_lines.append(line)
+        self.figure.addItem(line)
+    
+    def update_thr_line(self, thr):
+        if self.thr_line is not None:
+            self.figure.removeItem(self.thr_line)
+        
+        self.thr_line = pg.InfiniteLine(pos=thr, angle=0, pen="brown")
+        self.figure.addItem(self.thr_line)
+    
+    def update_yrange(self):
+        scale_factor = self._get_scale_factor()
+        ymin = self.settings.ymin * scale_factor
+        ymax = self.settings.ymax * scale_factor
+        self.figure.setYRange(ymin, ymax)
+    

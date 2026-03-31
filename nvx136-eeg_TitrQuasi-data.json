@@ -1,0 +1,53 @@
+[
+	{
+		"attributes": {
+			"activeStream": {
+				"connections": [
+					"tcp-ip://192.168.1.171:63303"
+				],
+				"metaData": {},
+				"name": "eeg",
+				"serializedType": "FwADAAAAAAAAAABAj0A=",
+				"uid": "{ed08170e-388c-4ba6-a698-688c90329876}"
+			},
+			"reconnect": true
+		},
+		"enabled": true,
+		"group": "default",
+		"index": 0,
+		"label": "data",
+		"name": "data",
+		"serialized": {
+			"desiredStream": {
+				"connections": [
+					"discover:///?stream=eeg&name=nvx136"
+				],
+				"metaData": {},
+				"name": "eeg",
+				"serializedType": "FwADAAAAAAAAAABAj0A="
+			}
+		},
+		"type": "Resonance::Parameters::Stream"
+	},
+	{
+		"attributes": {
+			"activeStream": {
+				"connections": [],
+				"metaData": {}
+			},
+			"reconnect": true
+		},
+		"enabled": true,
+		"group": "default",
+		"index": 0,
+		"label": "message",
+		"name": "message",
+		"serialized": {
+			"desiredStream": {
+				"connections": [],
+				"metaData": {}
+			}
+		},
+		"type": "Resonance::Parameters::Stream"
+	}
+]
