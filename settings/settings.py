@@ -24,8 +24,9 @@ class StimuliSettings:
     feedback_n: int = 2
     feedback_w: int = 460
     feedback_h: int = 460
-    filename: str = r"test.csv"
-
+    filename: str = r"test.hdf"
+    folder: str = r"R:\projects_TITR_Q\data\exp"
+    stimuli_bat: str = r"R:\projects_TITR_Q\stimuli.bat"
 
 @dataclass
 class PlotSettings:
@@ -76,3 +77,7 @@ class Settings:
     plot_settings: PlotSettings = field(default_factory=PlotSettings)
     processing_settings: ProcessingSettings = field(default_factory=ProcessingSettings)
     stimuli_settings: StimuliSettings = field(default_factory=StimuliSettings)
+
+    activate_bat: bool = True
+    bat_file: str = r"R:\aaaRESONANCE_2024_10_25\resonance_control.bat"
+    

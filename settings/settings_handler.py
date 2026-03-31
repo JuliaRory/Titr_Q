@@ -61,17 +61,16 @@ class SettingsHandler:
 
         self._peak_panel.spin_box_threshold_curr.valueChanged[int].connect(self._update_threshold)
 
-        self._stimuli_panel.combo_box_stimuli.currentIndexChanged[int].connect(self._update_stimuli)
-        self._stimuli_panel.spin_box_stimuli_n.valueChanged[int].connect(self._update_stimuli_n)
-        self._stimuli_panel.check_box_stimuli_inf.stateChanged.connect(self._update_stimuli_inf)
+        # self._stimuli_panel.combo_box_stimuli.currentIndexChanged[int].connect(self._update_stimuli)
+        # self._stimuli_panel.spin_box_stimuli_n.valueChanged[int].connect(self._update_stimuli_n)
+        # self._stimuli_panel.check_box_stimuli_inf.stateChanged.connect(self._update_stimuli_inf)
         self._stimuli_panel.spin_box_monitor.valueChanged[int].connect(self._update_monitor)
         self._stimuli_panel.check_box_stimuli_record.stateChanged.connect(self._update_record_status)
-        self._stimuli_panel.combo_box_feedback_mode.currentIndexChanged[int].connect(self._update_feedback_mode)
-        self._stimuli_panel.spin_box_feedback_n.valueChanged[int].connect(self._update_feedback_n)
-        self._stimuli_panel.spin_box_limit1.valueChanged[int].connect(self._update_limit1)
-        self._stimuli_panel.spin_box_limit2.valueChanged[int].connect(self._update_limit2)
-        self._stimuli_panel.spin_box_limit3.valueChanged[int].connect(self._update_limit3)
+        # self._stimuli_panel.combo_box_feedback_mode.currentIndexChanged[int].connect(self._update_feedback_mode)
+        # self._stimuli_panel.spin_box_feedback_n.valueChanged[int].connect(self._update_feedback_n)
+
         self._stimuli_panel.line_edit_filename.textChanged.connect(self._update_filename)
+        self._stimuli_panel.line_edit_folder.textChanged.connect(self._update_folder)
 
 
     # === plot settings === 
@@ -134,7 +133,9 @@ class SettingsHandler:
     # === stimuli settings === 
     def _update_filename(self, filename):
         self.settings.stimuli_settings.filename = filename
-        self.data_processor.change_file()
+    
+    def _update_folder(self, folder):
+        self.settings.stimuli_settings.folder = folder
 
     def _update_stimuli(self, index):
         self.settings.stimuli_settings.stimuli_curr = index

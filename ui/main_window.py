@@ -7,6 +7,8 @@ import time, random
 from h5py import File
 from numpy import diff, arange, array, full, sum, tile, newaxis, vstack, linspace, pi, sin
 
+import subprocess
+import os
 
 from collections import deque
 import copy
@@ -28,17 +30,18 @@ from ui.stimuli_control_panel import StimuliControlPanel
 WIDTH_SET, HEIGHT_SET = 1200, 500
 
 class MainWindow(QWidget):
-    def __init__(self, input_data_stream, input_message_stream):
+    def __init__(self, input_data_stream, input_message_stream, resonance):
         super().__init__()
         self.setWindowTitle("Quasi-titration")
         # self.setWindowIcon(QIcon(r"./resources/icon.png"))
 
-        # self._resonance = resonance                       # прокси для управления резонансными модулями
+        self._resonance = resonance                       # прокси для управления резонансными модулями
         self.settings = Settings()                        # Хранилище настроек
 
         self._input_stream = StreamSource(input_data_stream, input_message_stream)                              # Приёмник (онлайн) данных
         self._data_processor = DataProcessor(self.settings)              
         
+        self._init_state()
         self._setup_widgets()
         self._setup_layout()
 
@@ -50,9 +53,18 @@ class MainWindow(QWidget):
 
         self._setup_connections()
 
-        self.resize(WIDTH_SET, HEIGHT_SET)
+        self.setGeometry(200, 600, WIDTH_SET, HEIGHT_SET)
+        # self.resize(WIDTH_SET, HEIGHT_SET)
         self._finilaze()
 
+    def _init_state(self):
+        if self.settings.activate_bat:
+            # Запуск батника с qml-файлом для управления резонансными модулями
+            try:
+                cwd = os.path.dirname(self.settings.bat_file) # cwd = папка с батником
+                subprocess.Popen([self.settings.bat_file], cwd=cwd)
+            except:
+                print("RESONANCE CONTROL HAS NOT BEEN ACTIVATED: wrong path.")
     ## =======================
     ## === WIDGETS ===========
     ## =======================
@@ -67,7 +79,7 @@ class MainWindow(QWidget):
         self._figure_panel1 = OnlineGraph(n=1, settings=self.settings, data_processor=self._data_processor, parent=self)       # создать блок с графиками миограммы            --> self.plot_emg_graph
         self._figure_panel2 = OnlineGraph(n=2, settings=self.settings, data_processor=self._data_processor, parent=self)       # создать блок с графиками миограммы            --> self.plot_emg_graph
         self._figure_panel3 = OnlineGraph(n=3, settings=self.settings, data_processor=self._data_processor, parent=self)       # создать блок с графиками миограммы            --> self.plot_emg_graph
-        self._stimuli_panel = StimuliControlPanel(self.settings, parent=self)
+        self._stimuli_panel = StimuliControlPanel(self.settings, self._resonance, parent=self)
     
     ## =======================
     ## === LAYOUT ===========
@@ -105,6 +117,15 @@ class MainWindow(QWidget):
         
         self._data_processor.delayValues.connect(lambda delays: self._process_delays(delays))
 
+    def closeEvent(self, event):
+        # self._settings_handler.save_to_json(default=True)
+        # self._settings_handler_record.save_to_json(default=True)
+        
+        if self.settings.activate_bat:
+            service = self._resonance.getService("Resonance-control")     # Берем сервис
+            service.sendTransition('!terminate')
+        event.accept()
+        
     # logic
 
     def _process_delay(self, delay):
